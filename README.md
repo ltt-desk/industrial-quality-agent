@@ -48,9 +48,7 @@
 
 如果你想在本地修改或学习代码，请按以下步骤操作。
 
-### 1. 克隆仓库
-
-```bash
+### 1.克隆仓库
 git clone https://github.com/ltt-desk/industrial-quality-agent.git
 cd industrial-quality-agent
 
@@ -66,33 +64,37 @@ pip install -r requirements.txt
 DASHSCOPE_API_KEY = "sk-你的真实密钥"
 ⚠️ 切勿将 secrets.toml 提交到 Git（已在 .gitignore 中忽略）。
 
-4. 启动应用
+### 4. 启动应用
 streamlit run agent_app.py
 浏览器自动打开 http://localhost:8501，即可开始对话。
 
-📁 项目结构
-industrial-quality-agent/
-├── agent_app.py              # 主程序：Agent 逻辑 + Streamlit UI
-├── requirements.txt          # Python 依赖
-├── .streamlit/
-│   └── secrets.toml          # 本地密钥（不入库）
-└── README.md                 # 项目说明
 
-🧠 Agent 设计细节
+### 📁 项目结构
+
+📁 项目结构
+文件/文件夹	说明
+agent_app.py	主程序：Agent 逻辑 + Streamlit UI
+requirements.txt	Python 依赖包列表
+.streamlit/secrets.toml	本地 API 密钥配置（⚠️ 不入库）
+README.md	项目说明文档
+
+
+### 🧠 Agent 设计细节
 工具定义（Tools）
 使用 OpenAI 兼容的 Function Calling 格式声明两个工具：
 
-1. query_defect_rate
+#### 1. query_defect_rate
 ◦ 描述：查询指定产品的缺陷率
 ◦ 参数：product_code (string)
-2. get_fmea_suggestions
+#### 2. get_fmea_suggestions
 ◦ 描述：获取某个工艺的 FMEA 分析建议
 ◦ 参数：process (string)
-3.generate_fmea_table
+#### 3.generate_fmea_table
 ◦描述：生成指定工艺的完整 FMEA 表格（Markdown 格式）
 ◦参数：process (string)
 
-调用流程
+
+### 调用流程
 
 用户输入 → 大模型（带 tools 参数）→ 判断是否需要工具
    ↓ 需要调用
@@ -100,7 +102,8 @@ industrial-quality-agent/
    ↓ 不需要调用
 直接返回模型回答
 
-记忆机制
+
+### 记忆机制
 
 • 使用 st.session_state.messages 存储对话历史（字典列表）。
 • 每次请求将最近的消息发送给模型，实现上下文记忆。
