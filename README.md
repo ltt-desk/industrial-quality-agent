@@ -2,7 +2,7 @@
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://industrial-quality-agent.streamlit.app)
 
-本项目是一个面向制造业质量管理的 **AI Agent 原型**，基于大语言模型（通义千问）和工具调用（Function Calling）技术，能够理解自然语言问题，自动查询产品缺陷率、检索 FMEA 分析建议，并以对话形式提供专业回答。
+本项目是一个面向制造业质量管理的 **AI Agent 原型**，基于大语言模型（通义千问）和工具调用（Function Calling）技术，能够理解自然语言问题，自动查询产品缺陷率、检索 FMEA 分析建议，并生成完整的 FMEA 表格。
 
 > 该作品为个人的实践项目，展示 Agent 核心能力：规划、记忆、工具使用。
 
@@ -18,6 +18,7 @@
 
 - **多轮对话**：保留上下文，支持追问。
 - **自主决策**：Agent 自动判断是否需要调用工具，无需用户手动指定。
+- **表格输出**：符合 IATF 16949 规范的 FMEA 表格示例。
 
 ---
 
@@ -80,12 +81,16 @@ industrial-quality-agent/
 🧠 Agent 设计细节
 工具定义（Tools）
 使用 OpenAI 兼容的 Function Calling 格式声明两个工具：
+
 1. query_defect_rate
 ◦ 描述：查询指定产品的缺陷率
 ◦ 参数：product_code (string)
 2. get_fmea_suggestions
 ◦ 描述：获取某个工艺的 FMEA 分析建议
 ◦ 参数：process (string)
+3.generate_fmea_table
+◦描述：生成指定工艺的完整 FMEA 表格（Markdown 格式）
+◦参数：process (string)
 
 调用流程
 
