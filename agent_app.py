@@ -1,9 +1,9 @@
 import streamlit as st
 import json
 from openai import OpenAI
-API_KEY = st.secrets["sk-7fcd1b8b6fab441897913aec4a1dabb7"]
+API_KEY = st.secrets["DASHSCOPE_API_KEY"]
 
-st.title("🏭 华质云 · 工业质量AI助手")
+st.title("🏭 工业质量AI助手")
 st.caption("我可以帮你查询产品缺陷率或进行FMEA分析")
 
 # ------------------ 工具函数定义 ------------------
