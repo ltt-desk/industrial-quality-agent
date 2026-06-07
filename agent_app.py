@@ -875,10 +875,16 @@ SYNTHESIS_PROMPT = (
 # =============================================================================
 # 辅助函数
 # =============================================================================
-def call_llm(messages, temperature=0.7, max_tokens=4096, with_tools=False):
-    """统一 LLM 调用封装"""
+def get_model():
+    """获取当前选择的模型（从 session state 读取，支持侧边栏切换）"""
+    return st.session_state.get("selected_model", MODEL_NAME)
+
+
+def call_llm(messages, temperature=0.7, max_tokens=4096, with_tools=False, model=None):
+    """统一 LLM 调用封装，带错误处理和模型回退"""
+    use_model = model or get_model()
     kwargs = {
-        "model": MODEL_NAME,
+        "model": use_model,
         "messages": messages,
         "temperature": temperature,
         "top_p": 0.8,
@@ -887,7 +893,15 @@ def call_llm(messages, temperature=0.7, max_tokens=4096, with_tools=False):
     if with_tools:
         kwargs["tools"] = tools
         kwargs["tool_choice"] = "auto"
-    return client.chat.completions.create(**kwargs)
+    try:
+        return client.chat.completions.create(**kwargs)
+    except Exception as e:
+        err_msg = str(e)
+        if "qwen-max" in err_msg and use_model == "qwen-max":
+            st.warning(f"⚠️ qwen-max 不可用，自动回退到 qwen-plus")
+            kwargs["model"] = "qwen-plus"
+            return client.chat.completions.create(**kwargs)
+        raise
 
 # =============================================================================
 # UI Header
@@ -898,12 +912,25 @@ st.markdown("**全流程质量管理平台** — 覆盖来料检验 · 过程控
 # Sidebar - 全局信息
 with st.sidebar:
     st.header("📋 系统信息")
+
+    # 模型选择
+    if "selected_model" not in st.session_state:
+        st.session_state.selected_model = MODEL_NAME
+    current_model = st.selectbox(
+        "🧠 模型选择",
+        ["qwen-plus", "qwen-max"],
+        index=0 if st.session_state.selected_model == "qwen-plus" else 1,
+        help="qwen-max 更接近千问网页版，需在百炼控制台开通"
+    )
+    st.session_state.selected_model = current_model
+
+    st.divider()
     st.metric("数据产品数", len(PRODUCTS))
     st.metric("覆盖工艺", len(PROCESSES))
     st.metric("检验记录", len(data["inspection_records"]))
     st.metric("客诉记录", len(data["complaints"]))
     st.divider()
-    st.caption(f"模型：{MODEL_NAME}")
+    st.caption(f"模型：{current_model}")
     st.caption(f"数据更新：{datetime.now().strftime('%Y-%m-%d %H:%M')}")
     st.caption("数据为仿真生成，仅供演示")
 
