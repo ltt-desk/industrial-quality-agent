@@ -986,9 +986,9 @@ with tab1:
 
             answer = assistant_message.content or "抱歉，处理过程出现问题，请重试。"
         else:
-            # 不需要工具：不带 tools，纯聊天，输出与千问官网一致
+            # 不需要工具：不传 system prompt，保持千问最原生输出
             response = call_llm(
-                [{"role": "system", "content": CHAT_SYSTEM}, {"role": "user", "content": prompt}],
+                [{"role": "user", "content": prompt}],
                 temperature=0.7, max_tokens=4096, with_tools=False
             )
             answer = response.choices[0].message.content
