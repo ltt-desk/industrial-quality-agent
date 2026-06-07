@@ -1,0 +1,11 @@
+# Secrets
+my_secret.py
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Reference (not part of the project)
+industrial-quality-agent-main/
