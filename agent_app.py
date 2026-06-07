@@ -944,41 +944,54 @@ with tab1:
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # 单次调用：模型自行决定是否调用工具（与千问官网体验一致）
-        system_prompt = KNOWLEDGE_CHAT_SYSTEM if kb_mode else CHAT_SYSTEM
-        response = call_llm(
-            [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}],
-            temperature=0.7, max_tokens=4096, with_tools=True
-        )
+        # 快速判断是否需要工具：避免无关请求传 tools 影响千问原生回答
+        import re
+        _tool_kw = [
+            r"A\d+", r"B\d+", r"C\d+", r"D\d+", r"E\d+",
+            r"冲压|焊接|涂装|装配|铸造", r"LOT-", r"批次",
+            r"宝钢|鞍钢|巴斯夫|PPG|博世|大陆|海拉|延锋",
+            r"缺陷率|不良率|合格率|客诉|投诉",
+            r"FMEA表格|生成.*表格|来料检|成品检|过程质量",
+            r"供应商评分|供应商排名|追溯",
+        ]
+        _need_tools = kb_mode or any(re.search(kw, prompt) for kw in _tool_kw)
 
-        assistant_message = response.choices[0].message
-
-        # 处理工具调用
-        max_rounds = 3
-        round_num = 0
-        while assistant_message.tool_calls and round_num < max_rounds:
-            round_num += 1
-            tool_msgs = []
-            for tc in assistant_message.tool_calls:
-                func_name = tc.function.name
-                func_args = json.loads(tc.function.arguments)
-                result = available_functions[func_name](**func_args) if func_name in available_functions else f"未知工具：{func_name}"
-                tool_msgs.append({"role": "tool", "tool_call_id": tc.id, "content": result})
-
-            follow_up_msgs = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
-                {"role": "assistant", "content": None, "tool_calls": [
-                    {"id": tc.id, "type": "function",
-                     "function": {"name": tc.function.name, "arguments": tc.function.arguments}}
-                    for tc in assistant_message.tool_calls
-                ]},
-            ] + tool_msgs
-
-            response = call_llm(follow_up_msgs, temperature=0.7, max_tokens=4096, with_tools=False)
+        if _need_tools:
+            system_prompt = KNOWLEDGE_CHAT_SYSTEM if kb_mode else CHAT_SYSTEM
+            response = call_llm(
+                [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}],
+                temperature=0.3, max_tokens=1024, with_tools=True
+            )
             assistant_message = response.choices[0].message
 
-        answer = assistant_message.content
+            if assistant_message.tool_calls:
+                tool_msgs = []
+                for tc in assistant_message.tool_calls:
+                    func_name = tc.function.name
+                    func_args = json.loads(tc.function.arguments)
+                    result = available_functions[func_name](**func_args) if func_name in available_functions else f"未知工具：{func_name}"
+                    tool_msgs.append({"role": "tool", "tool_call_id": tc.id, "content": result})
+
+                follow_up = [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt},
+                    {"role": "assistant", "content": None, "tool_calls": [
+                        {"id": tc.id, "type": "function",
+                         "function": {"name": tc.function.name, "arguments": tc.function.arguments}}
+                        for tc in assistant_message.tool_calls
+                    ]},
+                ] + tool_msgs
+                response = call_llm(follow_up, temperature=0.7, max_tokens=4096, with_tools=False)
+                assistant_message = response.choices[0].message
+
+            answer = assistant_message.content or "抱歉，处理过程出现问题，请重试。"
+        else:
+            # 不需要工具：不带 tools，纯聊天，输出与千问官网一致
+            response = call_llm(
+                [{"role": "system", "content": CHAT_SYSTEM}, {"role": "user", "content": prompt}],
+                temperature=0.7, max_tokens=4096, with_tools=False
+            )
+            answer = response.choices[0].message.content
 
         st.session_state.chat_messages.append({"role": "assistant", "content": answer})
         with st.chat_message("assistant"):
