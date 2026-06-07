@@ -2,23 +2,44 @@
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://industrial-quality-agent.streamlit.app)
 
-本项目是一个面向制造业质量管理的 **AI Agent 原型**，基于大语言模型（通义千问）和工具调用（Function Calling）技术，能够理解自然语言问题，自动查询产品缺陷率、检索 FMEA 分析建议，并生成完整的 FMEA 表格。
+面向制造业质量管理的 **全功能 AI Agent**，基于通义千问大模型和 Function Calling 技术，覆盖来料检验、过程控制、成品检测、客诉处理全流程，支持多 Agent 协作、缺陷图片智能分析、质量数据可视化看板和自动报告生成。
 
-> 该作品为个人的实践项目，展示 Agent 核心能力：规划、记忆、工具使用。
+> 个人实践项目，展示 AI Agent 核心能力：**感知 → 规划 → 工具使用 → 记忆 → 多Agent协作**
 
 ---
 
-## ✨ 功能演示
+## ✨ 功能全景
 
-| 用户提问 | Agent 动作 | 回答示例 |
-|---------|-----------|----------|
-| “A100 的缺陷率” | 调用 `query_defect_rate` 工具 | “产品 A100 缺陷率：划痕1.2%，凹陷0.3%，总计1.5%。” |
-| “冲压工艺的 FMEA 分析” | 调用 `get_fmea_suggestions` 工具 | “冲压工艺潜在失效模式：裂纹、毛刺。建议：定期更换模具、在线视觉检测。” |
-| “B200 有没有缺陷数据？” | 调用工具 + 自然语言生成 | “B200 产品缺陷率为气孔0.5%，裂纹0.1%。” |
+### 💬 智能助手
+- 自然语言质量问答，自动调用 10 个业务工具
+- 内嵌质量管理知识库（ISO 9001 / FMEA / SPC / 8D / 5-Why / QC七大手法）
+- 知识库模式一键切换
 
-- **多轮对话**：保留上下文，支持追问。
-- **自主决策**：Agent 自动判断是否需要调用工具，无需用户手动指定。
-- **表格输出**：符合 IATF 16949 规范的 FMEA 表格示例。
+### 🤖 多 Agent 协作
+- **Orchestrator** 调度 → 5 个专业 Agent 并行分析 → 首席质量官综合报告
+- 来料检验(IQC) · 过程控制(IPQC) · 成品检测(OQC) · 客诉处理 · 数据分析
+- 6 种预设分析场景 + 自定义问题
+
+### 📊 数据看板
+- KPI 指标卡：综合良率、缺陷数、CPK 均值、客诉关闭率
+- 缺陷趋势折线图 + 帕累托图 + 严重度分布
+- 🔴 **实时监控模式**：模拟产线状态 + 异常告警
+
+### 📋 报告中心
+- 日报 / 周报 / 月报 / 8D客诉报告一键生成
+- Markdown + TXT 双格式下载
+
+### 📸 缺陷图片分析
+- 上传/拍摄产品缺陷照片 → qwen-vl-max 多模态识别
+- 自动输出：缺陷类型、严重度、原因分析、改善建议
+
+### 🔗 质量全链路追溯
+- 输入批次号 → 来料 → 过程 → 成品 → 出货 → 客诉全链路可视化
+- 一键生成追溯报告
+
+### ⚖️ 供应商评分看板
+- 8 家供应商质量绩效排名
+- 月度评分趋势 + 各维度对比 + AI 评估
 
 ---
 
@@ -26,105 +47,140 @@
 
 | 类别 | 技术 |
 |------|------|
-| 大模型 | 阿里云百炼（通义千问 qwen-plus） |
+| 大模型 | 阿里云百炼 — qwen-plus / qwen-vl-max |
 | Agent 范式 | OpenAI Function Calling（兼容接口） |
-| Web 界面 | Streamlit |
-| 部署平台 | Streamlit Community Cloud |
-| 语言环境 | Python 3.8+ |
+| Web 框架 | Streamlit |
+| 数据 | 仿真生成（5产品 × 180天 × 5工艺） |
+| 部署 | Streamlit Community Cloud |
+| 语言 | Python 3.10+ |
 
 ---
 
 ## 🚀 在线体验
 
-无需安装，直接访问云端部署版本：
+🔗 **[industrial-quality-agent.streamlit.app](https://industrial-quality-agent.streamlit.app)**
 
-🔗 **[https://industrial-quality-agent.streamlit.app](https://industrial-quality-agent.streamlit.app)**
-
-> 提示：首次加载可能需几秒，请耐心等待。支持手机/电脑访问。
+> 首次加载约需 10 秒，支持 PC / 手机访问。
 
 ---
 
-## 📦 本地运行（开发者）
+## 📦 本地运行
 
-如果你想在本地修改或学习代码，请按以下步骤操作。
+### 1. 克隆仓库
 
-### 1.克隆仓库
+```bash
 git clone https://github.com/ltt-desk/industrial-quality-agent.git
 cd industrial-quality-agent
+```
 
 ### 2. 安装依赖
+
+```bash
 pip install -r requirements.txt
+```
 
 ### 3. 配置 API 密钥
-注册 阿里云百炼 并开通服务。
 
-在控制台创建 API Key（以 sk- 开头）。
+注册 [阿里云百炼](https://bailian.console.aliyun.com/) 并开通 qwen-plus 和 qwen-vl-max 服务。
 
-在项目根目录创建文件夹 .streamlit，并在其中创建文件 secrets.toml，内容如下：
+在项目根目录创建 `.streamlit/secrets.toml`：
+
+```toml
 DASHSCOPE_API_KEY = "sk-你的真实密钥"
-⚠️ 切勿将 secrets.toml 提交到 Git（已在 .gitignore 中忽略）。
+```
+
+> ⚠️ `secrets.toml` 已在 `.gitignore` 中排除，不会被提交到 Git。
 
 ### 4. 启动应用
+
+```bash
 streamlit run agent_app.py
-浏览器自动打开 http://localhost:8501，即可开始对话。
+```
 
+浏览器自动打开 `http://localhost:8501`。
 
-### 📁 项目结构
+---
 
-📁 项目结构
-文件/文件夹	说明
-agent_app.py	主程序：Agent 逻辑 + Streamlit UI
-requirements.txt	Python 依赖包列表
-.streamlit/secrets.toml	本地 API 密钥配置（⚠️ 不入库）
-README.md	项目说明文档
+## 📁 项目结构
 
+```
+industrial-quality-agent/
+├── agent_app.py          # 主程序（1643行）：7 Tab + 全部业务逻辑
+├── requirements.txt      # Python 依赖
+├── .gitignore            # 排除密钥和缓存文件
+└── README.md
+```
 
-### 🧠 Agent 设计细节
-工具定义（Tools）
-使用 OpenAI 兼容的 Function Calling 格式声明两个工具：
+---
 
-#### 1. query_defect_rate
-◦ 描述：查询指定产品的缺陷率
-◦ 参数：product_code (string)
-#### 2. get_fmea_suggestions
-◦ 描述：获取某个工艺的 FMEA 分析建议
-◦ 参数：process (string)
-#### 3.generate_fmea_table
-◦描述：生成指定工艺的完整 FMEA 表格（Markdown 格式）
-◦参数：process (string)
+## 🧠 Agent 架构
 
+### 工具层（10 个 Function Calling 工具）
+
+| 工具 | 功能 |
+|------|------|
+| `query_defect_rate` | 查询产品缺陷率及趋势 |
+| `get_fmea_suggestions` | 获取工艺 FMEA 分析建议 |
+| `generate_fmea_table` | 生成完整 FMEA 表格（含 RPN） |
+| `query_incoming_inspection` | 查询来料检验数据 |
+| `query_process_quality` | 查询过程 Cpk 等质量参数 |
+| `query_final_inspection` | 查询成品检验合格率 |
+| `query_complaints` | 查询客户投诉记录 |
+| `query_knowledge` | 检索质量管理知识库 |
+| `trace_batch` | 批次全链路追溯 |
+| `query_supplier_score` | 供应商评分与排名 |
 
 ### 调用流程
 
-用户输入 → 大模型（带 tools 参数）→ 判断是否需要工具
-   ↓ 需要调用
-执行对应 Python 函数 → 将结果返回模型 → 生成最终自然语言回答
-   ↓ 不需要调用
-直接返回模型回答
+```
+用户输入 → 单次 API 调用（带 tools + 详细 System Prompt）
+  ├── 无需工具 → 千问原生质量直接回答（与官网体验一致）
+  └── 需要工具 → 执行 Python 函数 → 第二轮纯聊天模式生成回答
+```
 
+### 多 Agent 协作流程
 
-### 记忆机制
+```
+用户问题 → Orchestrator 规划任务
+                ↓
+    ┌──────────┼──────────┬──────────┐
+    ↓          ↓          ↓          ↓
+  IQC        IPQC       OQC       Complaint    Analysis
+  Agent      Agent      Agent     Agent        Agent
+    └──────────┼──────────┴──────────┘
+               ↓
+        Synthesis Agent（首席质量官）
+               ↓
+          综合质量分析报告
+```
 
-• 使用 st.session_state.messages 存储对话历史（字典列表）。
-• 每次请求将最近的消息发送给模型，实现上下文记忆。
+---
 
-📄 License
-本项目为个人作品，仅用于展示技术能力。数据均为模拟，不涉及商业机密。
-MIT License.
-￼
-👩‍💻 作者
-ltt
-• 🔗 GitHub：https://github.com/ltt-desk
+## 📊 数据说明
 
-🙏 致谢
-• 阿里云百炼提供的免费大模型算力
-• Streamlit 团队提供的低代码 Web 框架
+所有质量数据为**仿真生成**（固定随机种子保证一致性），仅供演示：
 
-📌 后续改进方向
-• 接入真实数据库（PostgreSQL / MySQL）替代模拟数据
-• 增加更多质检工具（如 query_inspection_record, get_defect_image）
-• 使用 LangGraph 实现多步规划（例如：先查缺陷率，再推荐改善措施）
-• 集成可视化图表（Streamlit 原生图表展示缺陷趋势）
+- **检验记录**：5 产品 × 180 天 = 900 条
+- **缺陷明细**：500 条（含缺陷类型、严重度、关联工艺）
+- **客诉记录**：80 条（含客户、损失金额）
+- **批次追溯**：A100/B200/C300 各 10 批次
+- **供应商**：8 家 × 6 个月评分记录
 
+---
 
+## 📄 License
 
+MIT License. 本项目为个人作品，数据均为模拟，不涉及商业机密。
+
+---
+
+## 👩‍💻 作者
+
+**ltt** — [GitHub](https://github.com/ltt-desk)
+
+---
+
+## 🙏 致谢
+
+- 阿里云百炼 — 通义千问 API
+- Streamlit — 低代码 Web 框架
