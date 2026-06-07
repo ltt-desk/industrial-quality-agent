@@ -34,7 +34,7 @@ client = OpenAI(
     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
 )
 
-MODEL_NAME = "qwen-plus"
+MODEL_NAME = "qwen-max"  # 最强模型，最接近千问网页版体验
 
 
 # =============================================================================
