@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 import os
+import re
 import random
 import time
 import pandas as pd
@@ -34,7 +35,7 @@ client = OpenAI(
     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
 )
 
-MODEL_NAME = "qwen-max"  # 最强模型，最接近千问网页版体验
+MODEL_NAME = "qwen-plus"  # 默认稳定模型，侧边栏可切换到 qwen-max
 
 
 # =============================================================================
@@ -897,11 +898,15 @@ def call_llm(messages, temperature=0.7, max_tokens=4096, with_tools=False, model
         return client.chat.completions.create(**kwargs)
     except Exception as e:
         err_msg = str(e)
-        if "qwen-max" in err_msg and use_model == "qwen-max":
-            st.warning(f"⚠️ qwen-max 不可用，自动回退到 qwen-plus")
+        if use_model == "qwen-max":
+            st.warning("⚠️ qwen-max 调用失败，自动回退到 qwen-plus")
             kwargs["model"] = "qwen-plus"
             return client.chat.completions.create(**kwargs)
-        raise
+        if use_model != "qwen-plus":
+            st.warning(f"⚠️ {use_model} 回退到 qwen-plus")
+            kwargs["model"] = "qwen-plus"
+            return client.chat.completions.create(**kwargs)
+        raise RuntimeError(f"API 调用失败：{err_msg[:300]}")
 
 # =============================================================================
 # UI Header
@@ -972,7 +977,6 @@ with tab1:
             st.markdown(prompt)
 
         # 快速判断是否需要工具：避免无关请求传 tools 影响千问原生回答
-        import re
         _tool_kw = [
             r"A\d+", r"B\d+", r"C\d+", r"D\d+", r"E\d+",
             r"冲压|焊接|涂装|装配|铸造", r"LOT-", r"批次",
