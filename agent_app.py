@@ -925,11 +925,13 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
 # TAB 1: 智能助手
 # =============================================================================
 with tab1:
-    col1, col2 = st.columns([3, 1])
+    col1, col2, col3 = st.columns([2, 1, 1])
     with col1:
         st.subheader("质量智能问答")
     with col2:
-        kb_mode = st.toggle("📚 知识库模式", help="开启后将检索质量管理知识库辅助回答")
+        native_mode = st.toggle("🌐 千问原生", help="开启后与千问官网输出完全一致，关闭后启用 Agent 工具能力")
+    with col3:
+        kb_mode = st.toggle("📚 知识库", help="检索质量管理知识库")
 
     # 对话历史
     if "chat_messages" not in st.session_state:
@@ -940,7 +942,13 @@ with tab1:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    if prompt := st.chat_input("问我任何质量问题… 如：A100缺陷率、冲压FMEA、SPC怎么做"):
+    # 处理来自快捷按钮的待处理问题，或从聊天输入获取
+if "pending_question" in st.session_state:
+    prompt = st.session_state.pop("pending_question")
+else:
+    prompt = st.chat_input("问我任何质量问题… 如：A100缺陷率、冲压FMEA、SPC怎么做")
+
+if prompt:
         st.session_state.chat_messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
@@ -1010,7 +1018,7 @@ with tab1:
         ]
         for i, ex in enumerate(examples):
             if cols[i % 3].button(ex, key=f"ex_{i}"):
-                st.session_state.chat_messages.append({"role": "user", "content": ex})
+                st.session_state.pending_question = ex
                 st.rerun()
 
 # =============================================================================
