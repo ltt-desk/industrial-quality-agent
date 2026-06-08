@@ -1365,18 +1365,57 @@ with tab4:
         st.markdown(report_content)
 
         # 下载
-        col_dl1, col_dl2 = st.columns(2)
+        def markdown_to_html(md_text, report_title):
+            """将 Markdown 报告转为带打印样式的 HTML，浏览器打开后可 Ctrl+P 导出 PDF"""
+            # 简单的 Markdown → HTML 转换
+            html = md_text
+            html = re.sub(r'^### (.+)$', r'<h3>\1</h3>', html, flags=re.MULTILINE)
+            html = re.sub(r'^## (.+)$', r'<h2>\1</h2>', html, flags=re.MULTILINE)
+            html = re.sub(r'^# (.+)$', r'<h1>\1</h1>', html, flags=re.MULTILINE)
+            html = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', html)
+            html = re.sub(r'\n- (.+)', r'<br>• \1', html)
+            html = html.replace('\n\n', '<br><br>')
+            return f'''<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>{report_title}</title>
+<style>
+  @media print {{ body {{ margin: 20mm; }} }}
+  body {{ font-family: "Microsoft YaHei","SimSun",sans-serif; max-width:800px; margin:auto; padding:20px; color:#333; line-height:1.8; }}
+  h1 {{ border-bottom:2px solid #2563eb; padding-bottom:8px; color:#1e40af; }}
+  h2 {{ color:#2563eb; margin-top:24px; }}
+  h3 {{ color:#374151; }}
+  table {{ border-collapse:collapse; width:100%; margin:12px 0; }}
+  th,td {{ border:1px solid #d1d5db; padding:8px 12px; text-align:left; }}
+  th {{ background:#f3f4f6; }}
+  .footer {{ margin-top:30px; padding-top:12px; border-top:1px solid #d1d5db; color:#9ca3af; font-size:12px; }}
+</style></head>
+<body>
+{html}
+<div class="footer"><p>🏭 工业质量 AI Agent 自动生成 | {datetime.now().strftime('%Y-%m-%d %H:%M')}</p></div>
+</body></html>'''
+
+        html_content = markdown_to_html(report_content, f"质量{report_type}")
+        col_dl1, col_dl2, col_dl3 = st.columns(3)
         with col_dl1:
             st.download_button(
-                "📥 下载报告 (Markdown)",
+                "📄 下载 PDF (HTML)",
+                data=html_content,
+                file_name=f"质量{report_type}_{datetime.now().strftime('%Y%m%d')}.html",
+                mime="text/html",
+                use_container_width=True,
+                help="下载后用浏览器打开，Ctrl+P 打印为 PDF"
+            )
+        with col_dl2:
+            st.download_button(
+                "📥 Markdown",
                 data=report_content,
                 file_name=f"质量{report_type}_{datetime.now().strftime('%Y%m%d')}.md",
                 mime="text/markdown",
                 use_container_width=True
             )
-        with col_dl2:
+        with col_dl3:
             st.download_button(
-                "📥 下载报告 (TXT)",
+                "📝 TXT",
                 data=report_content,
                 file_name=f"质量{report_type}_{datetime.now().strftime('%Y%m%d')}.txt",
                 mime="text/plain",
