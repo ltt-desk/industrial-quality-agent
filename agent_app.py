@@ -943,12 +943,12 @@ with tab1:
             st.markdown(msg["content"])
 
     # 处理来自快捷按钮的待处理问题，或从聊天输入获取
-if "pending_question" in st.session_state:
-    prompt = st.session_state.pop("pending_question")
-else:
-    prompt = st.chat_input("问我任何质量问题… 如：A100缺陷率、冲压FMEA、SPC怎么做")
+    if "pending_question" in st.session_state:
+        prompt = st.session_state.pop("pending_question")
+    else:
+        prompt = st.chat_input("问我任何质量问题… 如：A100缺陷率、冲压FMEA、SPC怎么做")
 
-if prompt:
+    if prompt:
         st.session_state.chat_messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
