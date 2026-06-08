@@ -925,13 +925,11 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
 # TAB 1: 智能助手
 # =============================================================================
 with tab1:
-    col1, col2, col3 = st.columns([2, 1, 1])
+    col1, col2 = st.columns([3, 1])
     with col1:
         st.subheader("质量智能问答")
     with col2:
-        native_mode = st.toggle("🌐 千问原生", help="开启后与千问官网输出完全一致，关闭后启用 Agent 工具能力")
-    with col3:
-        kb_mode = st.toggle("📚 知识库", help="检索质量管理知识库")
+        kb_mode = st.toggle("📚 知识库模式", help="检索质量管理知识库辅助回答")
 
     # 对话历史
     if "chat_messages" not in st.session_state:
